@@ -1,15 +1,15 @@
-name: Fetch AQI Data Hourly
+name: Fetch Data Every Hour
 
 on:
   schedule:
-    - cron: "0 * * * *"  # every hour
+    - cron: "0 * * * *"  # Every hour
   workflow_dispatch:
 
 jobs:
-  fetch_data:
+  fetch:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -18,13 +18,15 @@ jobs:
           python-version: "3.10"
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          pip install -r requirements.txt
 
-      - name: Run data fetcher
+      - name: Run Fetch Script
         env:
+          OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+          IQAIR_API_KEY: ${{ secrets.IQAIR_API_KEY }}
           DB_HOST: ${{ secrets.DB_HOST }}
           DB_NAME: ${{ secrets.DB_NAME }}
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          OPENWEATHER_API: ${{ secrets.OPENWEATHER_API }}
         run: python fetch_data.py

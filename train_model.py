@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import psycopg2
 import numpy as np
@@ -39,7 +40,7 @@ df = df.dropna()
 if len(df) < 10:
     raise ValueError("❌ Not enough data to train models. Add more weather data first.")
 
-# Simulate AQI temporarily
+# Simulate AQI temporarily (for demonstration)
 df["AQI"] = (df["temperature"] * 2) + (df["humidity"] * 0.5) + (df["pressure"] * 0.01)
 
 X = df[["temperature", "humidity", "pressure"]]
@@ -47,13 +48,16 @@ y = df["AQI"]
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
+# ---------------------- CREATE MODELS FOLDER ----------------------
+os.makedirs("models", exist_ok=True)
+
 # ---------------------- MODEL 1: LINEAR REGRESSION ----------------------
 print("\n📘 Training Linear Regression...")
 lr = LinearRegression()
 lr.fit(X_train, y_train)
 lr_pred = lr.predict(X_test)
 lr_rmse = np.sqrt(mean_squared_error(y_test, lr_pred))
-joblib.dump(lr, "linear_regression.pkl")
+joblib.dump(lr, "models/linear_regression.pkl")
 
 # ---------------------- MODEL 2: RANDOM FOREST ----------------------
 print("🌲 Training Random Forest...")
@@ -61,7 +65,7 @@ rf = RandomForestRegressor(n_estimators=100, random_state=42)
 rf.fit(X_train, y_train)
 rf_pred = rf.predict(X_test)
 rf_rmse = np.sqrt(mean_squared_error(y_test, rf_pred))
-joblib.dump(rf, "random_forest.pkl")
+joblib.dump(rf, "models/random_forest.pkl")
 
 # ---------------------- MODEL 3: XGBOOST ----------------------
 print("⚡ Training XGBoost...")
@@ -69,7 +73,7 @@ xgb = XGBRegressor(n_estimators=100, learning_rate=0.1, random_state=42)
 xgb.fit(X_train, y_train)
 xgb_pred = xgb.predict(X_test)
 xgb_rmse = np.sqrt(mean_squared_error(y_test, xgb_pred))
-joblib.dump(xgb, "xgboost_model.pkl")
+joblib.dump(xgb, "models/xgboost_model.pkl")
 
 # ---------------------- MODEL 4: LSTM ----------------------
 print("🧠 Training LSTM...")
@@ -89,7 +93,7 @@ model_lstm.fit(X_lstm, y_lstm, epochs=30, batch_size=8, verbose=0, callbacks=[es
 X_test_lstm = X_test.values.reshape((X_test.shape[0], 1, X_test.shape[1]))
 lstm_pred = model_lstm.predict(X_test_lstm, verbose=0)
 lstm_rmse = np.sqrt(mean_squared_error(y_test, lstm_pred))
-model_lstm.save("lstm_model.h5")
+model_lstm.save("models/lstm_model.h5")
 
 # ---------------------- RESULTS ----------------------
 print("\n📊 Model Performance:")
@@ -108,4 +112,4 @@ print("XGBoost:", xgb.predict(sample)[0])
 sample_lstm = sample.reshape((1, 1, 3))
 print("LSTM:", model_lstm.predict(sample_lstm, verbose=0)[0][0])
 
-print("\n✅ All models trained and saved successfully!")
+print("\n✅ All models trained and saved successfully in the 'models/' folder!")
