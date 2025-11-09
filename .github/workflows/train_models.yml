@@ -5,6 +5,10 @@ on:
     - cron: "3 * * * *"  # Runs 3 minutes after your fetch job each hour
   workflow_dispatch:
 
+permissions:
+  contents: write
+
+
 jobs:
   train:
     runs-on: ubuntu-latest
