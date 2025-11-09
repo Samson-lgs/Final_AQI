@@ -1,4 +1,3 @@
-import os
 import pandas as pd
 import psycopg2
 import numpy as np
@@ -11,6 +10,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense
 from tensorflow.keras.callbacks import EarlyStopping
 import joblib
+import os
 import warnings
 
 warnings.filterwarnings("ignore")
@@ -21,6 +21,7 @@ DB_NAME = "neondb"
 DB_USER = "neondb_owner"
 DB_PASSWORD = "npg_1yEJuba0dzxi"
 
+print("🔗 Connecting to Neon database...")
 conn = psycopg2.connect(
     host=DB_HOST,
     database=DB_NAME,
@@ -32,7 +33,6 @@ conn = psycopg2.connect(
 query = "SELECT city, temperature, humidity, pressure FROM openweather_data;"
 df = pd.read_sql_query(query, conn)
 conn.close()
-
 print(f"✅ Data fetched: {len(df)} rows")
 
 # ---------------------- DATA PREPROCESSING ----------------------
@@ -40,7 +40,7 @@ df = df.dropna()
 if len(df) < 10:
     raise ValueError("❌ Not enough data to train models. Add more weather data first.")
 
-# Simulate AQI temporarily (for demonstration)
+# Simulate AQI temporarily
 df["AQI"] = (df["temperature"] * 2) + (df["humidity"] * 0.5) + (df["pressure"] * 0.01)
 
 X = df[["temperature", "humidity", "pressure"]]
@@ -48,7 +48,7 @@ y = df["AQI"]
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# ---------------------- CREATE MODELS FOLDER ----------------------
+# ---------------------- ENSURE MODELS DIRECTORY ----------------------
 os.makedirs("models", exist_ok=True)
 
 # ---------------------- MODEL 1: LINEAR REGRESSION ----------------------
@@ -102,14 +102,4 @@ print(f"Random Forest RMSE: {rf_rmse:.3f}")
 print(f"XGBoost RMSE: {xgb_rmse:.3f}")
 print(f"LSTM RMSE: {lstm_rmse:.3f}")
 
-# ---------------------- PREDICT WITH ALL MODELS ----------------------
-sample = np.array([[30, 60, 1013]])  # Example input
-print("\n🔮 Predictions for sample input (Temp=30°C, Humidity=60%, Pressure=1013hPa):")
-print("Linear Regression:", lr.predict(sample)[0])
-print("Random Forest:", rf.predict(sample)[0])
-print("XGBoost:", xgb.predict(sample)[0])
-
-sample_lstm = sample.reshape((1, 1, 3))
-print("LSTM:", model_lstm.predict(sample_lstm, verbose=0)[0][0])
-
-print("\n✅ All models trained and saved successfully in the 'models/' folder!")
+print("\n✅ All models trained and saved successfully to 'models/' folder!")
